@@ -168,7 +168,7 @@ export function readCanvasFromEditor(editor: Editor, base?: Canvas): Canvas {
     if (m.kind === 'company') {
       const b = editor.getShapePageBounds(s.id);
       if (!b) continue;
-      const p = (s as { props: Record<string, unknown> }).props;
+      const p = (s as unknown as { props: Record<string, unknown> }).props;
       nodes.push({
         id: m.domainId,
         type: 'company',
@@ -184,7 +184,7 @@ export function readCanvasFromEditor(editor: Editor, base?: Canvas): Canvas {
     } else if (m.kind === 'group') {
       const b = editor.getShapePageBounds(s.id);
       if (!b) continue;
-      const p = (s as { props: Record<string, unknown> }).props;
+      const p = (s as unknown as { props: Record<string, unknown> }).props;
       groups.push({ id: m.domainId, label: String(p.name ?? ''), x: round(b.x), y: round(b.y), w: round(b.w), h: round(b.h) });
     } else if (m.kind === 'edge') {
       let from: string | undefined;
@@ -227,6 +227,7 @@ export function startSync(
   let sendTimer: ReturnType<typeof setTimeout> | undefined;
   let lastCanvas: Canvas | undefined;
   let currentActiveId: string | null = null;
+  let disposed = false;
 
   function scheduleSend() {
     if (applyingRemote) return;
@@ -243,14 +244,21 @@ export function startSync(
   const unlisten = editor.store.listen(scheduleSend, { source: 'user', scope: 'document' });
 
   function connect() {
+    if (disposed) return;
     ws = new WebSocket(opts.url);
-    ws.onopen = () => opts.onStatus?.('connected');
+    ws.onopen = () => {
+      if (!disposed) opts.onStatus?.('connected');
+    };
     ws.onclose = () => {
+      if (disposed) return;
       opts.onStatus?.('disconnected');
       setTimeout(connect, 1000); // resilient reconnect for a long-lived session
     };
-    ws.onerror = () => ws?.close();
+    ws.onerror = () => {
+      if (!disposed) ws?.close();
+    };
     ws.onmessage = (ev) => {
+      if (disposed) return;
       let msg: { type: string; canvas?: Canvas; activeId?: string | null; canvases?: CanvasInfo[] };
       try { msg = JSON.parse(ev.data); } catch { return; }
       if (msg.type === 'canvases' && msg.canvases) {
@@ -271,8 +279,15 @@ export function startSync(
   connect();
 
   return () => {
+    disposed = true;
     unlisten();
     clearTimeout(sendTimer);
+    if (ws) {
+      ws.onclose = null;
+      ws.onerror = null;
+      ws.onmessage = null;
+      ws.onopen = null;
+    }
     ws?.close();
   };
 }

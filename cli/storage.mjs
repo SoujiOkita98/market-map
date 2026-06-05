@@ -26,6 +26,8 @@ export function slug(s) {
 }
 
 const fileFor = (id) => join(MAPS, `${id}.json`);
+export const storagePaths = { root: ROOT, data: DATA, maps: MAPS, active: ACTIVE };
+export const mapFileFor = fileFor;
 
 export function newCanvasObject(title, id) {
   return { id: id || slug(title), version: 1, title: title || 'Untitled map', nodes: [], edges: [], groups: [] };

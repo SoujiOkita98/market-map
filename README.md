@@ -37,10 +37,15 @@ state lives on disk so the agent can always reach it.
 pnpm install && pnpm --prefix app install     # or: npm run setup
 
 npm run dev          # starts the hub (:5174) AND the tldraw app (:5173) together
+npm run stop         # closes any running Market Map dev server for this repo
 ```
 
 Open **http://localhost:5173**. You should see the demo cloud-infrastructure map.
 The badge top-right shows **agent-synced** (green) when the hub is connected.
+
+`npm run dev` also clears stale Market Map dev processes from the default local
+ports first, so a forgotten previous run should not push Vite onto a fallback
+port.
 
 Then, in another terminal, act as the agent:
 
@@ -115,6 +120,7 @@ other, step x by ~280. To stack, step y by ~190.
 ```bash
 node cli/map.mjs canvas list                  # all maps
 node cli/map.mjs canvas current               # the active map
+node cli/map.mjs canvas where                 # local data folder + active map file
 node cli/map.mjs canvas new --title "AI Chips Landscape"   # create + switch to it
 node cli/map.mjs canvas use <id>              # switch the active map
 node cli/map.mjs canvas delete <id>           # delete a map
