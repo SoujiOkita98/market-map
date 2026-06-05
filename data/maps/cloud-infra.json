@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "title": "Cloud Infrastructure Market Map (demo)",
+  "nodes": [
+    {
+      "id": "amazon",
+      "type": "company",
+      "name": "Amazon",
+      "subtitle": "E-commerce + Cloud holding",
+      "x": -40,
+      "y": -260,
+      "w": 240,
+      "h": 130,
+      "color": "blue",
+      "logoUrl": null,
+      "groupId": null,
+      "metadata": {
+        "ticker": "AMZN",
+        "role": "Parent company of AWS"
+      },
+      "sources": []
+    },
+    {
+      "id": "aws",
+      "type": "company",
+      "name": "AWS",
+      "subtitle": "Cloud infrastructure",
+      "x": 320,
+      "y": 0,
+      "w": 240,
+      "h": 150,
+      "color": "orange",
+      "logoUrl": null,
+      "groupId": "cloud",
+      "metadata": {
+        "role": "Market-leading public cloud (IaaS/PaaS)",
+        "revenue": "fill me in",
+        "operatingIncome": "fill me in",
+        "regions": "fill me in"
+      },
+      "sources": []
+    },
+    {
+      "id": "azure",
+      "type": "company",
+      "name": "Microsoft Azure",
+      "subtitle": "Cloud infrastructure",
+      "x": 600,
+      "y": 0,
+      "w": 240,
+      "h": 150,
+      "color": "violet",
+      "logoUrl": null,
+      "groupId": "cloud",
+      "metadata": {
+        "role": "#2 public cloud, strong enterprise + AI (OpenAI)"
+      },
+      "sources": []
+    },
+    {
+      "id": "gcp",
+      "type": "company",
+      "name": "Google Cloud",
+      "subtitle": "Cloud infrastructure",
+      "x": 880,
+      "y": 0,
+      "w": 240,
+      "h": 150,
+      "color": "green",
+      "logoUrl": null,
+      "groupId": "cloud",
+      "metadata": {
+        "role": "#3 public cloud, data + AI focus"
+      },
+      "sources": []
+    },
+    {
+      "id": "enterprise",
+      "type": "company",
+      "name": "Enterprise Customers",
+      "subtitle": "Demand side",
+      "x": 600,
+      "y": 360,
+      "w": 240,
+      "h": 110,
+      "color": "grey",
+      "logoUrl": null,
+      "groupId": null,
+      "metadata": {
+        "role": "Businesses consuming cloud capacity"
+      },
+      "sources": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_amzn_aws",
+      "from": "amazon",
+      "to": "aws",
+      "label": "owns"
+    },
+    {
+      "id": "e_aws_ent",
+      "from": "aws",
+      "to": "enterprise",
+      "label": "serves"
+    }
+  ],
+  "groups": [
+    {
+      "id": "cloud",
+      "label": "Cloud Infrastructure",
+      "x": 296,
+      "y": -24,
+      "w": 848,
+      "h": 198
+    }
+  ],
+  "id": "cloud-infra"
+}
