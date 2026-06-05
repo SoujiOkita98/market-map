@@ -41,6 +41,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { applyCommand } from './canvas-ops.mjs';
+import { auditCanvasFacts } from './facts.mjs';
 import * as store from './storage.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,10 @@ async function main() {
   // ---- read-only on the active map ------------------------------------------
   if (command === 'list') return out({ ok: true, canvas: await readCanvas() });
   if (command === 'summary') return out({ ok: true, summary: summarize(await readCanvas()) });
+  if (command === 'audit') {
+    const audit = auditCanvasFacts(await readCanvas());
+    return out({ ok: audit.ok, audit });
+  }
   if (command === 'get') {
     const canvas = await readCanvas();
     const node = canvas.nodes.find((n) => n.id === positional[0]);
@@ -124,6 +129,17 @@ function buildCommand(command, positional, flags) {
         x: flags.x, y: flags.y, w: flags.w, h: flags.h });
     case 'add-source':
       return clean({ action: 'add-source', id: positional[0], url: flags.url, label: flags.label });
+    case 'add-fact':
+      return clean({
+        action: 'add-fact',
+        id: positional[0],
+        key: flags.key,
+        value: flags.value,
+        asOf: flags.asOf,
+        sourceLabel: flags['source-label'],
+        sourceUrl: flags['source-url'],
+        note: flags.note,
+      });
     case 'delete-node':
       return { action: 'delete-node', id: positional[0] };
     case 'delete-edge':
@@ -264,6 +280,8 @@ function printHelp() {
     `  node cli/map.mjs connect --from aws --to enterprise --label serves\n` +
     `  node cli/map.mjs group --id cloud --label "Cloud Infrastructure" --members aws,azure,gcp\n` +
     `  node cli/map.mjs add-source aws --label "10-K 2024" --url https://...\n` +
+    `  node cli/map.mjs add-fact aws --key revenue --value "$100B" --asOf 2024-12-31 --source-url https://...\n` +
+    `  node cli/map.mjs audit\n` +
     `  node cli/map.mjs delete-node aws | delete-edge e_aws_ent\n` +
     `  node cli/map.mjs export [--out file.json] | import file.json\n\n` +
     `Hub: ${HUB} (set MAP_HUB to override). Falls back to data/maps/ files when the hub is offline.\n`);

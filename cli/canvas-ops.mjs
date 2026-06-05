@@ -9,6 +9,7 @@
  * (POST /api/command) and by the CLI's offline fallback. Each mutates `canvas`
  * in place and returns a small result describing what happened.
  */
+import { makeFact } from './facts.mjs';
 
 const DEFAULT_NODE = { type: 'company', w: 240, h: 140, color: 'blue', logoUrl: null, groupId: null, metadata: {}, sources: [] };
 
@@ -148,6 +149,26 @@ export function addSource(canvas, id, args) {
   return { action: 'add-source', node };
 }
 
+export function addFact(canvas, id, args) {
+  const node = findNode(canvas, id);
+  if (!node) throw err(`node "${id}" not found`);
+  if (!args.key) throw err('add-fact requires --key');
+
+  node.metadata = node.metadata && typeof node.metadata === 'object' && !Array.isArray(node.metadata)
+    ? node.metadata
+    : {};
+  node.metadata[args.key] = makeFact(args);
+
+  const source = node.metadata[args.key].source;
+  if (source?.url) {
+    node.sources = node.sources ?? [];
+    const exists = node.sources.some((s) => s.url === source.url);
+    if (!exists) node.sources.push({ label: source.label ?? source.url, url: source.url });
+  }
+
+  return { action: 'add-fact', node, key: args.key, fact: node.metadata[args.key] };
+}
+
 export function deleteNode(canvas, id) {
   if (!findNode(canvas, id)) throw err(`node "${id}" not found`);
   canvas.nodes = canvas.nodes.filter((n) => n.id !== id);
@@ -170,6 +191,7 @@ export function applyCommand(canvas, cmd) {
     case 'connect': return connect(canvas, cmd);
     case 'group': return group(canvas, cmd);
     case 'add-source': return addSource(canvas, cmd.id, cmd);
+    case 'add-fact': return addFact(canvas, cmd.id, cmd);
     case 'delete-node': return deleteNode(canvas, cmd.id);
     case 'delete-edge': return deleteEdge(canvas, cmd.id);
     default: throw err(`unknown action "${cmd.action}"`);

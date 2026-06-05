@@ -6,3 +6,4 @@ dist/
 exports/*
 !exports/.gitkeep
 .gstack/
+data/backups/

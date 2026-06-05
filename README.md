@@ -132,6 +132,7 @@ Everything below acts on the **active** map.
 node cli/map.mjs list                       # full canvas JSON
 node cli/map.mjs summary                     # compact overview (best for reading)
 node cli/map.mjs get <nodeId>                # one node
+node cli/map.mjs audit                       # check numeric facts have dates/sources
 
 node cli/map.mjs add-node --id aws --name "AWS" --x 320 --y 0 \
     [--w 240 --h 150 --color orange --subtitle "Cloud infrastructure" \
@@ -139,6 +140,9 @@ node cli/map.mjs add-node --id aws --name "AWS" --x 320 --y 0 \
 
 node cli/map.mjs update-node aws --color orange \
     --metadata '{"revenue":"~$100B"}' --merge-metadata    # merge, don't replace
+
+node cli/map.mjs add-fact aws --key revenue --value "$100B" \
+    --asOf 2024-12-31 --source-label "FY 2024 10-K" --source-url https://…
 
 node cli/map.mjs move aws --x 500 --y 100                  # absolute
 node cli/map.mjs move aws --dx 280 --dy 0                  # relative
@@ -159,6 +163,25 @@ node cli/map.mjs import map.json             # replace the whole canvas
 
 PNG/SVG export is done from the **browser** (the PNG / SVG buttons, top-right),
 because only the live tldraw editor can render shapes to an image.
+
+### Research data discipline
+
+Treat the canvas as a research artifact, not just a drawing. Any quantitative
+claim should be stored as a fact object with:
+
+```json
+{
+  "value": "$100B",
+  "asOf": "2024-12-31",
+  "source": { "label": "FY 2024 10-K", "url": "https://…" },
+  "note": "optional context"
+}
+```
+
+Use `add-fact` for valuation, revenue, income, headcount, market share, growth,
+multiples, or any other number that could go stale. Use `audit` before relying on
+or publishing a map; it flags numeric-looking metadata that is not backed by a
+date and source.
 
 ### Worked example — the use case from the brief
 

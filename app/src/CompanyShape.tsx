@@ -123,7 +123,7 @@ export class CompanyShapeUtil extends ShapeUtil<CompanyShape> {
           {metaEntries.map(([k, v]) => (
             <div key={k} style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
               <span style={{ opacity: 0.6 }}>{k}: </span>
-              <span>{String(v)}</span>
+              <span>{formatMetaValue(v)}</span>
             </div>
           ))}
         </div>
@@ -141,4 +141,16 @@ export class CompanyShapeUtil extends ShapeUtil<CompanyShape> {
     path.rect(0, 0, shape.props.w, shape.props.h);
     return path;
   }
+}
+
+function formatMetaValue(value: unknown) {
+  if (isFact(value)) {
+    const date = value.asOf ? ` @ ${value.asOf}` : '';
+    return `${String(value.value)}${date}`;
+  }
+  return String(value);
+}
+
+function isFact(value: unknown): value is { value: unknown; asOf?: string } {
+  return Boolean(value && typeof value === 'object' && 'value' in value);
 }
