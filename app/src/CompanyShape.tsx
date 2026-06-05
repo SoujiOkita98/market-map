@@ -8,29 +8,36 @@
  */
 import {
   HTMLContainer,
+  type Geometry2d,
   Rectangle2d,
+  type RecordProps,
   ShapeUtil,
   T,
+  type TLShape,
   resizeBox,
-  type TLBaseShape,
   type TLResizeInfo,
 } from 'tldraw';
 
 export type CompanySource = { label: string; url: string };
 
-export type CompanyShape = TLBaseShape<
-  'company',
-  {
-    name: string;
-    subtitle: string;
-    w: number;
-    h: number;
-    color: string;
-    logoUrl: string | null;
-    metadata: unknown; // arbitrary JSON-serialisable facts
-    sources: CompanySource[];
+type CompanyShapeProps = {
+  name: string;
+  subtitle: string;
+  w: number;
+  h: number;
+  color: string;
+  logoUrl: string | null;
+  metadata: unknown; // arbitrary JSON-serialisable facts
+  sources: CompanySource[];
+};
+
+declare module '@tldraw/tlschema' {
+  interface TLGlobalShapePropsMap {
+    company: CompanyShapeProps;
   }
->;
+}
+
+export type CompanyShape = TLShape<'company'>;
 
 // A small, friendly palette. Keys are what the agent passes as --color.
 const PALETTE: Record<string, { bg: string; border: string; text: string }> = {
@@ -47,7 +54,7 @@ const swatch = (c: string) => PALETTE[c] ?? PALETTE.blue;
 export class CompanyShapeUtil extends ShapeUtil<CompanyShape> {
   static override type = 'company' as const;
 
-  static override props = {
+  static override props: RecordProps<CompanyShape> = {
     name: T.string,
     subtitle: T.string,
     w: T.number,
@@ -70,7 +77,7 @@ export class CompanyShapeUtil extends ShapeUtil<CompanyShape> {
     return resizeBox(shape, info);
   }
 
-  override getGeometry(shape: CompanyShape) {
+  override getGeometry(shape: CompanyShape): Geometry2d {
     return new Rectangle2d({ width: shape.props.w, height: shape.props.h, isFilled: true });
   }
 
@@ -129,7 +136,9 @@ export class CompanyShapeUtil extends ShapeUtil<CompanyShape> {
     );
   }
 
-  override indicator(shape: CompanyShape) {
-    return <rect width={shape.props.w} height={shape.props.h} rx={12} />;
+  override getIndicatorPath(shape: CompanyShape) {
+    const path = new Path2D();
+    path.rect(0, 0, shape.props.w, shape.props.h);
+    return path;
   }
 }

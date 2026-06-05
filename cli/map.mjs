@@ -19,6 +19,7 @@
  * Map management:
  *   canvas list                          list all maps
  *   canvas current                       show the active map
+ *   canvas where                         show local map storage paths
  *   canvas new --title "..." [--id X]    create a new map and switch to it
  *   canvas use <id>                      switch the active map
  *   canvas delete <id>                   delete a map
@@ -62,13 +63,14 @@ async function main() {
       const c = await readCanvas();
       return out({ ok: true, activeId: c.id ?? null, title: c.title, nodes: c.nodes.length });
     }
+    if (sub === 'where') return out({ ok: true, storage: await storageLocation() });
     if (sub === 'new') {
       const created = await createCanvas({ title: flags.title ?? positional[1], id: flags.id });
       return out({ ok: true, created });
     }
     if (sub === 'use') return out({ ok: true, ...(await useCanvas(positional[1])) });
     if (sub === 'delete') return out({ ok: true, ...(await deleteCanvas(positional[1])) });
-    throw new Error(`unknown canvas subcommand "${sub}" (list|current|new|use|delete)`);
+    throw new Error(`unknown canvas subcommand "${sub}" (list|current|where|new|use|delete)`);
   }
 
   // ---- read-only on the active map ------------------------------------------
@@ -188,6 +190,17 @@ async function deleteCanvas(id) {
   catch (e) { if (e.isUserError) throw e; await store.deleteCanvasById(id); return { deleted: id }; }
 }
 
+async function storageLocation() {
+  const activeId = await store.readActiveId();
+  return {
+    mode: 'local filesystem',
+    mapsDir: store.storagePaths.maps,
+    activeFile: store.storagePaths.active,
+    activeId,
+    activeMapFile: activeId ? store.mapFileFor(activeId) : null,
+  };
+}
+
 async function replaceCanvas(canvas) {
   try { await post('/api/canvas', canvas); }
   catch (e) {
@@ -240,7 +253,7 @@ function out(obj) { process.stdout.write(JSON.stringify(obj, null, 2) + '\n'); }
 function printHelp() {
   process.stdout.write(`market-map CLI — the agent's interface to the maps\n\n` +
     `MAPS:\n` +
-    `  node cli/map.mjs canvas list | current\n` +
+    `  node cli/map.mjs canvas list | current | where\n` +
     `  node cli/map.mjs canvas new --title "AI Chips Landscape"\n` +
     `  node cli/map.mjs canvas use <id> | canvas delete <id>\n\n` +
     `ACTIVE MAP:\n` +

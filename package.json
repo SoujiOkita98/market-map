@@ -6,9 +6,11 @@
   "description": "Agent-collaborative market mapping tool built on tldraw.",
   "scripts": {
     "setup": "pnpm install && pnpm --prefix app install",
+    "predev": "node scripts/stop-dev.mjs --quiet",
     "dev": "concurrently -n hub,app -c green,cyan \"npm:dev:hub\" \"npm:dev:app\"",
     "dev:hub": "node server/index.mjs",
     "dev:app": "npm --prefix app run dev",
+    "stop": "node scripts/stop-dev.mjs",
     "map": "node cli/map.mjs"
   },
   "dependencies": {
